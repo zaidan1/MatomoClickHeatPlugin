@@ -54,5 +54,4 @@ class MysqlLogger extends AbstractLogger
     {
         $this->model->cleanLogging(self::get('flush'));
     }
-
 }

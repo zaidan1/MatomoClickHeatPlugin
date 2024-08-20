@@ -1,32 +1,37 @@
-<div id="contenu" class="piwik-form">
-	<span id="cleaner"></span>
-	<form action="{{ clickheat_path }}index.php" method="get" onsubmit="return false;" id="clickForm">
-		<div class="row">
-            <div piwik-field uicontrol="select" name="group"
+<div id="contenu" class="piwik-form" data-pleasewait="{{ clickheat_loading }}" data-cleanerrunning="{{ clickheat_cleaner }}" data-isjsokay='<a href="#" onclick="showJsCode(); return false;">{{ clickheat_jsokay }}</a>' data-jsadmincookie="{{ clickheat_admincookie }}" data-hideiframes="{{ clickheat_iframes }}" data-hideflashes="{{ clickheat_flashes }}" data-scriptpath="{{ clickheat_host }}{{ clickheat_path }}" data-scriptindexpath="{{ clickheat_index | raw }}" data-requesteddate="{{ clickheat_date }}" data-currentrange="{{ clickheat_range }}" data-currentalpha="{{ clickheat_alpha }}">
+        <span id="cleaner"></span>
+        <form action="{{ clickheat_path }}index.php" method="get" onsubmit="return false;" id="clickForm">
+                <div class="row">
+            <select piwik-field uicontrol="select" name="group"
                  id="formGroup"
                  title="{{ 'ClickHeat_LANG_GROUP' | translate }}"
-                 options='{{ clickheat_groups | json_encode }}'
-                 value="{{ clickheat_groups|keys|first }}"
                  class="col s6 m3"
-                 full-width="true">>
-            </div>
-            <div piwik-field uicontrol="select" name="browser"
+                 full-width="true">
+		{% for group_key, group_value in clickheat_groups %}
+		  <option value="{{ group_key }}" {% if loop.first %}selected{% endif %}>{{ group_value }}</option>
+		{% endfor %}
+            </select>
+            <select piwik-field uicontrol="select" name="browser"
                  id="formBrowser"
                  title="{{ 'ClickHeat_LANG_BROWSER' | translate }}"
-                 options='{{ clickheat_browsers | json_encode }}'
-                 value='{{ clickheat_browsers|keys|first }}'
                  class="col s6 m3"
                  full-width="true">
-            </div>
-            <div piwik-field uicontrol="select" name="screen"
+		{% for group_key, group_value in clickheat_browsers %}
+                  <option value="{{ group_key }}" {% if loop.first %}selected{% endif %}>{{ group_value }}</option>
+                {% endfor %}
+
+            </select>
+            <select piwik-field uicontrol="select" name="screen"
                  id="formScreen"
                  title="{{ 'ClickHeat_LANG_SCREENSIZE' | translate }}"
-                 options='{{ clickheat_screens | json_encode }}'
-                 value='{{ clickheat_screens|keys|first }}'
                  class="col s6 m3"
                  full-width="true">
-            </div>
-			<div class="col s6 m3">
+		 {% for group_key, group_value in clickheat_screens %}
+                  <option value="{{ group_key }}" {% if loop.first %}selected{% endif %}>{{ group_value }}</option>
+                {% endfor %}
+
+            </select>
+                        <div class="col s6 m3">
                 <br>
                 <ul>
                     {#<li>#}
@@ -41,30 +46,31 @@
                         <a href="#" onclick="showJsCode(); return false;">{{ 'ClickHeat_GET_TRACKING_CODE'|translate }}</a>
                     </li>
                 </ul>
-			</div>
-		</div>
+                        </div>
+                </div>
         <div class="row">
             <div class="col s12">
                 <a class="btn" href="javascript:" onclick="applyChange();">Apply</a>
             </div>
         </div>
-		<div class="row">
-			<div class="col m3">
+                <div class="row">
+                        <div class="col m3">
                 {{ 'ClickHeat_LANG_HEATMAP' | translate }}
-			</div>
-			<div class="col m4">
-				<input type="checkbox" id="formHeatmap" name="heatmap"{{ clickheat_force_heatmap }} /><span id="alphaSelector"></span>
-			</div>
-		</div>
-	</form>
+                        </div>
+                        <div class="col m4">
+                                <input type="checkbox" id="formHeatmap" name="heatmap"{{ clickheat_force_heatmap }} />
+                                <span id="alphaSelector"></span>
+                        </div>
+                </div>
+        </form>
 </div>
 <div id="divPanel" onmouseover="showPanel();" onclick="hidePanel();"><img src="{{ clickheat_path }}images/arrow-up.png" width="11" height="6" alt="" /></div>
 <div id="layoutDiv"></div>
 <div id="overflowDiv">
-	<div id="pngDiv"></div>
-	<p><iframe src="{{ clickheat_path }}clickempty.html" id="webPageFrame" onload="window.setTimeout('cleanIframe();', 2000);" frameborder="0" scrolling="no" width="50" height="0"></iframe></p>
+        <div id="pngDiv"></div>
+        <p><iframe src="{{ clickheat_path }}clickempty.html" id="webPageFrame" onload="window.setTimeout('cleanIframe();', 2000);" frameborder="0" scrolling="no" width="50" height="0"></iframe></p>
 </div>
-<script type="text/javascript">
+<component :is="'script'">
 pleaseWait = '{{ clickheat_loading }}';
 cleanerRunning = '{{ clickheat_cleaner }}';
 isJsOkay = '<a href="#" onclick="showJsCode(); return false;">{{ clickheat_jsokay }}</a>';
@@ -90,4 +96,5 @@ setTimeout(function () {
     /** Run cleaner */
     runCleaner();
 }, 2000);
-</script>
+</component>
+

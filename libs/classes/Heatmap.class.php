@@ -264,7 +264,9 @@ class Heatmap
                 imagetruecolortopalette($img, false, 127);
                 for ($i = 0, $max = imagecolorstotal($img); $i < $max; $i++) {
                     $color = imagecolorsforindex($img, $i);
-                    imagecolorset($img, $i, $colors[floor(127 - $color['red'] / 2)][0], $colors[floor(127 - $color['red'] / 2)][1], $colors[floor(127 - $color['red'] / 2)][2]);
+          #          imagecolorset($img, $i, $colors[floor(127 - $color['red'] / 2)][0], $colors[floor(127 - $color['red'] / 2)][1], $colors[floor(127 - $color['red'] / 2)][2]);
+	             imagecolorset($img, $i, $colors[floor((127 - $color['red']) / 2)][0], $color['green'], $color['blue']);
+
                 }
             } else {
                 /* Need some transparency, really? So we have to deal with each and every pixel */

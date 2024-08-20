@@ -35,7 +35,8 @@ abstract class AbstractLogger
      *
      * @return bool
      */
-    abstract public function log($siteId, $groupName, $referrer, $browser, $screenSize, $posX, $posY);
+     abstract public function log($siteId, $groupName, $referrer, $browser, $screenSize, $posX, $posY);
+
 
     /**
      *

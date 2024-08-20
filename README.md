@@ -1,5 +1,9 @@
 # Matomo / Piwik ClickHeat Plugin
-
+This fork is under development. Please make a backup of your Matomo installation before testing this plugin.
+> New in version 5.0.1
+> - Support Matomo 5.X 
+> - libs/js/ClickHeat.js optimisation 
+> - Support arabic language
 ## Description
 ClickHeat 3 is a visual heatmap of clicks on a HTML page for Matomo / Piwik 3.x.
 This plugin based on [Dugwood's ClickHeat version 1.14](https://github.com/dugwood/clickheat)

@@ -63,7 +63,7 @@ function resizeDiv() {
     // document.getElementById('overflowDiv').style.height = (iH < 300 ? 400 : iH) - getTop(document.getElementById('overflowDiv')) + 'px';
     /** Width of main display */
     iW = iW < 300 ? 400 : iW;
-    var selectedScreen = cleanInput($('#formScreen select:eq(0)').val());
+    var selectedScreen = cleanInput($('#formScreen').val());
     if (selectedScreen === '0' || selectedScreen === '?') {
         currentWidth = iW;
     } else {
@@ -80,9 +80,9 @@ function updateHeatmap() {
     }
     var screen = 0;
     document.getElementById('pngDiv').innerHTML = '&nbsp;<div style="line-height:20px"><span class="error">' + pleaseWait + '</span></div>';
-    var selectedGroup = cleanInput($('#formGroup select:eq(0)').val());
-    var selectedScreen = cleanInput($('#formScreen select:eq(0)').val());
-    var selectedBrowser = cleanInput($('#formBrowser select:eq(0)').val());
+    var selectedGroup = cleanInput($('#formGroup').val());
+    var selectedScreen = cleanInput($('#formScreen').val());
+    var selectedBrowser = cleanInput($('#formBrowser').val());
     if (selectedScreen === '0' || selectedScreen === '?') {
         screen = -1 * currentWidth + 25;
     } else {
@@ -169,7 +169,7 @@ function showJsCode() {
 
 /* Ajax request to get associated group in iframe */
 function loadIframe() {
-    var selectedGroup = cleanInput($('#formGroup select:eq(0)').val());
+    var selectedGroup = cleanInput($('#formGroup').val());
     $.get(
         scriptIndexPath + 'action=getGroupUrl&group=' + selectedGroup + '&rand=' + Date(),
         {},
@@ -190,7 +190,7 @@ function saveGroupLayout() {
     return false;
     // TODO: enable this feature
     var i;
-    var selectedGroup = cleanInput($('#formGroup select:eq(0)').val());
+    var selectedGroup = cleanInput($('#formGroup').val());
     for (i = 0; i < 7; i += 1) {
         if (document.getElementById('layout-radio-' + i).checked) {
             break;

@@ -3,6 +3,9 @@
 namespace Piwik\Plugins\ClickHeat;
 
 use Piwik\Plugins\ClickHeat\Utils\Configurable;
+use Piwik\DI;
+use Piwik\SettingsPiwik;
+use Piwik\View\SecurityPolicy;
 
 class Config
 {
@@ -22,7 +25,7 @@ class Config
     }
 
     static $configurations = [
-        // will be override by system settings
+        // will be overridden by system settings
         'checkReferrer'  => false,
         'redis'          => [
             'sentinel' => '',
@@ -51,7 +54,7 @@ class Config
         'yesterday'      => false,
         'alpha'          => 80,
         'version'        => '0.1.9',
-        '__screenSizes'  => [0/** Must start with 0 */, 640, 800, 1024, 1280, 1440, 1600, 1800],
+        '__screenSizes'  => [0/** Must start with 0 */, 412,640, 800, 1024, 1280, 1440, 1600, 1800],
         '__browsersList' => ['all' => '', 'firefox' => 'Firefox', 'chrome' => 'Google Chrome', 'msie' => 'Internet Explorer', 'safari' => 'Safari', 'opera' => 'Opera', 'kmeleon' => 'K-meleon', 'unknown' => ''],
     ];
 

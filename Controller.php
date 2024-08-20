@@ -25,7 +25,9 @@ use Piwik\Plugins\ClickHeat\Utils\DrawingTarget;
 use Piwik\Plugins\ClickHeat\Utils\Helper;
 use Piwik\Plugins\SitesManager\API;
 use Piwik\Site;
-use Piwik\Translate;
+use Piwik\Translation\Translator;
+
+
 use Piwik\Piwik;
 use Piwik\Common;
 
@@ -68,8 +70,11 @@ class Controller extends \Piwik\Plugin\Controller
         if (!defined('IS_PIWIK_MODULE')) {
             define('IS_PIWIK_MODULE', true);
         }
-        if (!defined('CLICKHEAT_LANGUAGE')) {
-            define('CLICKHEAT_LANGUAGE', Translate::getLanguageToLoad());
+        if (!defined('CLICKHEAT_LANGUAGE')) 
+	{
+	  $translator = StaticContainer::get(Translator::class);
+	  $language = $translator->getCurrentLanguage();
+	  define('CLICKHEAT_LANGUAGE', $language);
         }
         if (!defined('CLICKHEAT_ADMIN')) {
             if (Piwik::hasUserSuperUserAccess()) {
@@ -131,7 +136,7 @@ class Controller extends \Piwik\Plugin\Controller
         /* Browser */
         $browser = $this->getBrowser();
         $screenInfo = $this->getScreenSize();
-        if ($screenInfo === null) {
+        if ($screenInfo[0] === null) {
             return $this->error(Piwik::Translate('ClickHeat_LANG_ERROR_SCREEN'));
         }
 
@@ -217,20 +222,32 @@ class Controller extends \Piwik\Plugin\Controller
      */
     public function click()
     {
-        $validateRequest = $this->isValidRequest();
-        if ($validateRequest !== true) {
+        $validateRequest = $this->isValidRequest('Clicks',null,'json');
+        if ($validateRequest !== true) 
+	{
             return $validateRequest;
         }
         @ignore_user_abort(true);
-        $this->logger->log(
-            Common::getRequestVar('s'),
-            Common::getRequestVar('g'),
-            $_SERVER['HTTP_REFERER'],
-            Helper::getBrowser(Common::getRequestVar('b')),
-            Common::getRequestVar('w'),
-            Common::getRequestVar('x'),
-            Common::getRequestVar('y')
-        );
+	$click=Common::getRequestVar('Clicks',null,'json');
+	$i=0;
+	for($i=0;$i<count($click['clicks']);$i++)
+	{
+	  if (
+                isset($click['clicks'][$i]['s']) && isset($click['clicks'][$i]['g']) && isset($click['clicks'][$i]['b']) &&
+                isset($click['clicks'][$i]['w']) && isset($click['clicks'][$i]['x']) && isset($click['clicks'][$i]['y'])
+            ) 
+	  {
+            $this->logger->log(
+              $click['clicks'][$i]['s'],
+              $click['clicks'][$i]['g'],
+              $_SERVER['HTTP_REFERER'],
+              Helper::getBrowser($click['clicks'][$i]['b']),
+              $click['clicks'][$i]['w'],
+              $click['clicks'][$i]['x'],
+              $click['clicks'][$i]['y']
+            );
+	  }
+	}
 
         return 'ClickHeat: OK';
 
@@ -240,75 +257,78 @@ class Controller extends \Piwik\Plugin\Controller
      * @param string $refererHost
      * @return bool
      */
-    private function checkReferrer($refererHost)
-    {
-        $siteUrls = API::getInstance()->getSiteUrlsFromId(Common::getRequestVar('s'));
-        foreach ($siteUrls as $siteUrl) {
-            $siteHost = parse_url($siteUrl, PHP_URL_HOST);
-            if (strtolower($siteHost) === strtolower($refererHost)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
+     private function checkReferrer($refererHost, $siteId)
+     {
+   	 $siteUrls = API::getInstance()->getSiteUrlsFromId($siteId);
+	 foreach ($siteUrls as $siteUrl) 
+	 {
+	        $siteHost = parse_url($siteUrl, PHP_URL_HOST);
+        	if (strtolower($siteHost) === strtolower($refererHost)) 
+		{
+	            return true;
+        	}
+    	 }
+         return false;
+       }
 
     /**
      * @return bool|string
      */
     protected function isValidRequest()
     {
-        $group = Common::getRequestVar('g');
-        if (
-            !isset($_GET['x'])
-            || !isset($_GET['y'])
-            || !isset($_GET['w'])
-            || empty($group)
-            || !isset($_GET['s'])
-            || !isset($_GET['b'])
-            || !isset($_GET['c'])
-        ) {
-            return "\"ClickHeat: Parameters or config error\"";
-        }
+      $clickData = Common::getRequestVar('Clicks',null,'json');
+      $siteId = $clickData['clicks'][0]['s'];
+      $Browser= $clickData['clicks'][0]['b'];
+      if (empty($clickData) || !is_array($clickData)) 
+      {
+        return "ClickHeat: No clicks data found";
+      }
 
-        // check referer
-        if (Config::get('checkReferrer')) {
-            if (!isset($_SERVER['HTTP_REFERER'])) {
-                return 'ClickHeat: No domain in referer';
+    // Check referer
+      if (Config::get('checkReferrer')) 
+      {
+        if (!isset($_SERVER['HTTP_REFERER'])) 
+	{
+            return 'ClickHeat: No domain in referer';
+        }
+        try 
+	{
+            $refererHost = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
+            if (!$this->checkReferrer($refererHost,$siteId)) 
+	    {
+                return 'ClickHeat: Forbidden domain (' . $refererHost . '), change or rem';
             }
-            try {
-                $refererHost = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
-                if (!$this->checkReferrer($refererHost)) {
-                    return 'ClickHeat: Forbidden domain (' . $refererHost . '), change or remove security settings in the /config panel to allow this one';
-                }
-            } catch (NoAccessException $e) {
-                // try to access site info and compare host name
-            }
+        } 
+	catch (NoAccessException $e) 
+	{
+            // try to access site info and compare host name
         }
+      }
 
-        // check browser
-        $browser = Helper::getBrowser(Common::getRequestVar('b'));
-        if ($browser === '') {
-            return 'ClickHeat: Browser empty';
+    // Check browser
+	$browser = Helper::getBrowser($Browser);
+	if ($browser === '') 
+        {
+          return 'ClickHeat: Browser empty';
         }
-        if ($isSkipped = $this->isSkippable()) {
-            return $isSkipped;
+        if ($isSkipped = $this->isSkippable($siteId)) 
+        {
+          return $isSkipped;
         }
-
-        return true;
+      return true;
     }
 
     /**
      * @return bool|string
      */
-    private function isSkippable()
+    private function isSkippable($siteId)
     {
         $adminCookie = new Cookie('clickheat-admin');
         if ($adminCookie->isCookieFound()) {
             return "ClickHeat: OK, but click not logged as you selected it in the admin panel";
         } else {
             try {
-                $site = API::getInstance()->getSiteFromId(Common::getRequestVar('s'));
+                $site = API::getInstance()->getSiteFromId($siteId);
                 if ($excludedIps = $site['excluded_ips']) {
                     $ip = IPUtils::stringToBinaryIP(\Piwik\Network\IP::fromStringIP(IP::getIpFromHeader()));
                     if (Helper::isIpInRange($ip, explode(',', $excludedIps))) {
@@ -382,7 +402,8 @@ class Controller extends \Piwik\Plugin\Controller
     private function getScreenSize()
     {
         $screen = Common::getRequestVar('screen', 0);
-        if (!is_numeric($screen)) {
+        if (!is_numeric($screen)) 
+	{
             return null;
         }
         $screen = (int)$screen;

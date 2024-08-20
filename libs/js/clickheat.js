@@ -1,1 +1,153 @@
-function addEvtListener(a,b,c){document.addEventListener?a?a.addEventListener(b,c,!1):addEventListener(b,c,!1):attachEvent&&(a?a.attachEvent("on"+b,c):attachEvent("on"+b,c))}function showClickHeatDebug(a){clickHeatDebug===!0&&(document.getElementById("clickHeatDebuggerSpan").innerHTML=a,document.getElementById("clickHeatDebuggerDiv").style.display="block")}function catchClickHeat(a){var b,c,d,e,f,g,h,i,j,k,l,m,n,o,p=!1,q=!1;try{if(showClickHeatDebug("Gathering click data..."),0===clickHeatQuota)return showClickHeatDebug("Click not logged: quota reached"),!0;if(""===clickHeatGroup)return showClickHeatDebug("Click not logged: group name empty (clickHeatGroup)"),!0;if(a||(a=window.event),b=a.which||a.button,c=a.srcElement||null,0===b)return showClickHeatDebug("Click not logged: no button pressed"),!0;if(null!==c&&"iframe"===c.tagName.toLowerCase()){if(c.sourceIndex===clickHeatLastIframe)return showClickHeatDebug("Click not logged: same iframe (a click on iframe opens a popup and popup is closed => iframe gets the focus again)"),!0;clickHeatLastIframe=c.sourceIndex}else clickHeatLastIframe=-1;if(d=a.clientX,e=a.clientY,f=clickHeatDocument.clientWidth||window.innerWidth,g=clickHeatDocument.clientHeight||window.innerHeight,j=window.pageXOffset||clickHeatDocument.scrollLeft,k=window.pageYOffset||clickHeatDocument.scrollTop,h=Math.max(clickHeatDocument.scrollWidth,clickHeatDocument.offsetWidth,f),i=Math.max(clickHeatDocument.scrollHeight,clickHeatDocument.offsetHeight,g),d>f||e>g)return showClickHeatDebug("Click not logged: out of document (should be a click on scrollbars)"),!0;if(d+=j,e+=k,d<0||e<0||d>h||e>i)return showClickHeatDebug("Click not logged: out of document (should be a click out of the document's body)"),!0;if(l=new Date,l.getTime()-clickHeatTime<1e3)return showClickHeatDebug("Click not logged: at least 1 second between clicks"),!0;if(clickHeatTime=l.getTime(),clickHeatQuota>0&&(clickHeatQuota-=1),o="s="+clickHeatSite+"&g="+clickHeatGroup+"&x="+d+"&y="+e+"&w="+f+"&b="+clickHeatBrowser+"&c="+b+"&random="+Date(),clickHeatServer.indexOf("?")!==-1&&(o="&"+o),showClickHeatDebug("Ready to send click data..."),0!==clickHeatServer.indexOf("http")){try{q=new ActiveXObject("Msxml2.XMLHTTP")}catch(a){try{q=new ActiveXObject("Microsoft.XMLHTTP")}catch(a){q=null}}q||"undefined"==typeof XMLHttpRequest||(q=new XMLHttpRequest),q&&(clickHeatDebug===!0&&(q.onreadystatechange=function(){4===q.readyState&&(showClickHeatDebug(200===q.status?"Click recorded at "+clickHeatServer+" with the following parameters:<br/>x = "+d+" ("+(d-j)+"px from left + "+j+"px of horizontal scrolling, max width = "+h+")<br/>y = "+e+" ("+(e-k)+"px from top + "+k+"px of vertical scrolling, max height = "+i+")<br/>width = "+f+"<br/>browser = "+clickHeatBrowser+"<br/>click = "+b+"<br/>site = "+clickHeatSite+"<br/>group = "+clickHeatGroup+"<br/><br/>Server answer: "+q.responseText:404===q.status?"click.php was not found at: "+(""!==clickHeatServer?clickHeatServer:"/clickheat/click.php")+" please set clickHeatServer value":"click.php returned a status code "+q.status+" with the following error: "+q.responseText),clickHeatLocalWait=0)}),q.open("GET",clickHeatServer+o,!0),q.send(null),p=!0)}for(p===!1&&(clickHeatDebug===!0?showClickHeatDebug("Click recorded at "+clickHeatServer+" with the following parameters:<br/>x = "+(d+j)+" ("+d+"px from left + "+j+"px of horizontal scrolling)<br/>y = "+(e+k)+" ("+e+"px from top + "+k+"px of vertical scrolling)<br/>width = "+f+"<br/>browser = "+clickHeatBrowser+"<br/>click = "+b+"<br/>site = "+clickHeatSite+"<br/>group = "+clickHeatGroup+'<br/><br/>Server answer:<br/><iframe src="'+clickHeatServer+o+'" width="700" height="60"></iframe>'):(n=new Image,n.src=clickHeatServer+o)),m=new Date,clickHeatLocalWait=m.getTime()+clickHeatWait;clickHeatLocalWait>m.getTime();)m=new Date}catch(a){showClickHeatDebug("An error occurred while processing click (Javascript error): "+a.message)}return!0}function initClickHeat(){var a,b,c,d,e,f;if(clickHeatDebug===!0&&(f=document.createElement("div"),f.id="clickHeatDebuggerDiv",f.style.padding="5px",f.style.display="none",f.style.position="absolute",f.style.top="200px",f.style.left="200px",f.style.border="1px solid #888",f.style.backgroundColor="#eee",f.style.color="#a00",f.style.zIndex=99,f.innerHTML='<a href="#" onmouseover="document.getElementById(\'clickHeatDebuggerDiv\').style.display = \'none\'; return false" style="float:right">Rollover to close</a><strong>ClickHeat debug:</strong><br/><br/><span id="clickHeatDebuggerSpan"></span>',document.body.appendChild(f)),""===clickHeatGroup||""===clickHeatServer)return showClickHeatDebug("ClickHeat NOT initialised: either clickHeatGroup or clickHeatServer is empty"),!1;for(e=document.location.protocol+"//"+document.location.host,0===clickHeatServer.indexOf(e)&&(clickHeatServer=clickHeatServer.substring(e.length,clickHeatServer.length)),addEvtListener(document,"mousedown",catchClickHeat),b=document.getElementsByTagName("iframe"),a=0;a<b.length;a+=1)addEvtListener(b[a],"focus",catchClickHeat);for(clickHeatDocument=document.documentElement&&0!==document.documentElement.clientHeight?document.documentElement:document.body,c=navigator.userAgent?navigator.userAgent.toLowerCase().replace(/-/g,""):"",d=["chrome","firefox","safari","msie","opera"],clickHeatBrowser="unknown",a=0;a<d.length;a+=1)if(c.indexOf(d[a])!==-1){clickHeatBrowser=d[a];break}showClickHeatDebug("ClickHeat initialised with:<br/>site = "+clickHeatSite+"<br/>group = "+clickHeatGroup+"<br/>server = "+clickHeatServer+"<br/>quota = "+(clickHeatQuota===-1?"unlimited":clickHeatQuota)+"<br/>browser = "+clickHeatBrowser+"<br/><br/><strong>Click in a blank area (not on a link) to test ClickHeat</strong>")}var clickHeatGroup="",clickHeatSite="",clickHeatServer="",clickHeatLastIframe=-1,clickHeatTime=0,clickHeatQuota=-1,clickHeatBrowser="",clickHeatDocument="",clickHeatWait=500,clickHeatLocalWait=0,clickHeatDebug=document.location.href.indexOf("debugclickheat")!==-1;
+function addEvtListener(element, event, handler) 
+{
+    if (document.addEventListener) 
+    {
+        (element || document).addEventListener(event, handler, false);
+    }
+    else if (attachEvent) 
+    {
+        (element || document).attachEvent("on" + event, handler);
+    }
+}
+
+function catchClickHeat(event) 
+{
+    try 
+    {
+        if (clickHeatQuota === 0 || clickHeatGroup === "") return true;
+
+        event = event || window.event;
+        var button = event.which || event.button;
+        var element = event.srcElement || event.target;
+        if (button === 0) return true;
+
+        if (element && element.tagName.toLowerCase() === "iframe") 
+	{
+            if (element.sourceIndex === clickHeatLastIframe) return true;
+            clickHeatLastIframe = element.sourceIndex;
+        } 
+	else 
+	{
+            clickHeatLastIframe = -1;
+        }
+
+        var clientX = event.clientX;
+        var clientY = event.clientY;
+        var docWidth = document.documentElement.clientWidth || window.innerWidth;
+        var docHeight = document.documentElement.clientHeight || window.innerHeight;
+        var scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+        var scrollY = window.pageYOffset || document.documentElement.scrollTop;
+        var docMaxWidth = Math.max(document.documentElement.scrollWidth, document.documentElement.offsetWidth, docWidth);
+        var docMaxHeight = Math.max(document.documentElement.scrollHeight, document.documentElement.offsetHeight, docHeight);
+
+        if (clientX > docWidth || clientY > docHeight) return true;
+        clientX += scrollX;
+        clientY += scrollY;
+        if (clientX < 0 || clientY < 0 || clientX > docMaxWidth || clientY > docMaxHeight) return true;
+
+        var currentTime = new Date().getTime();
+        if (currentTime - clickHeatTime < 1000) return true;
+        clickHeatTime = currentTime;
+
+        if (clickHeatQuota > 0) clickHeatQuota--;
+
+        var clickData = 
+	{
+            s: clickHeatSite,
+            g: clickHeatGroup,
+            x: clientX,
+            y: clientY,
+            w: docWidth,
+            b: clickHeatBrowser,
+            button: button,
+            time: currentTime
+        };
+
+        var storedClicks = JSON.parse(localStorage.getItem('clickHeatData')) || [];
+        storedClicks.push(clickData);
+        localStorage.setItem('clickHeatData', JSON.stringify(storedClicks));
+    } 
+    catch (e) 
+    {
+        console.error("An error occurred while processing click: ", e.message);
+    }
+    return true;
+}
+
+function sendClickData(event) 
+{
+    try 
+    {
+        var storedClicks = JSON.parse(localStorage.getItem('clickHeatData')) || [];
+        if (storedClicks.length === 0) return;
+
+        // Prepare the array of clicks
+        var clicksArray = [];
+        for (var i = 0; i < storedClicks.length; i++) 
+	{
+            var click = storedClicks[i];var clickData = `{"s": ${click.s},"g": "${click.g}","x": ${click.x},"y": ${click.y},"w": ${click.w},"b": "${click.b}","button": ${click.button},"time": ${click.time}}`;
+            clicksArray.push(clickData);
+        }
+
+        // Combine the clicks into a single JSON object
+        var jsonData = `{"clicks": [${clicksArray.join(',')}]}`;
+
+        // Encode the JSON data for URL parameters
+        var params = encodeURIComponent(jsonData);
+
+        // Construct the URL with the encoded data
+	var url = clickHeatServer + (clickHeatServer.indexOf("?") !== -1 ? "&" : "?") +'Clicks='+ params;
+
+        // Create an image element to make the GET request
+        var img = new Image();
+        img.src = url;
+	console.log(url);
+        //event.preventDefault();
+        // Remove the stored clicks after sending
+        localStorage.removeItem('clickHeatData');
+    } 
+    catch (e) 
+    {
+        event.preventDefault();
+        console.error("An error occurred while sending click data: ", e.message);
+    }
+}
+
+function initClickHeat() {
+    if (clickHeatGroup === "" || clickHeatServer === "") return false;
+
+    var baseUrl = document.location.protocol + "//" + document.location.host;
+    if (clickHeatServer.indexOf(baseUrl) === 0) {
+        clickHeatServer = clickHeatServer.substring(baseUrl.length);
+    }
+
+    addEvtListener(document, "mousedown", catchClickHeat);
+
+    document.addEventListener('focus', function(event) {
+        if (event.target.tagName.toLowerCase() === 'iframe') {
+            catchClickHeat(event);
+        }
+    }, true);
+
+    var userAgent = navigator.userAgent ? navigator.userAgent.toLowerCase().replace(/-/g, "") : "";
+    var browsers = ["chrome", "firefox", "safari", "msie", "opera"];
+    for (var j = 0; j < browsers.length; j++) {
+        if (userAgent.indexOf(browsers[j]) !== -1) {
+            clickHeatBrowser = browsers[j];
+            break;
+        }
+    }
+
+    window.addEventListener('beforeunload', sendClickData);
+}
+
+var clickHeatGroup = "";
+var clickHeatSite = "";
+var clickHeatServer = "";
+var clickHeatLastIframe = -1;
+var clickHeatTime = 0;
+var clickHeatQuota = -1;
+var clickHeatBrowser = "";
+var clickHeatWait = 500;
+initClickHeat();
+

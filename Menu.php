@@ -22,3 +22,4 @@ class Menu extends \Piwik\Plugin\Menu
         $menu->addVisitorsItem('ClickHeat', array('module' => 'ClickHeat', 'action' => 'view'), 1);
     }
 }
+
